@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>产品到期监测</title>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script>
+    function calculateRemainingTime() {
+      var productName = $('#productName').val();
+      var expirationDate = new Date($('#expirationDate').val());
+      var currentDate = new Date();
+
+      setInterval(function() {
+        currentDate = new Date();
+        updateRemainingTime(productName, expirationDate, currentDate);
+      }, 1000); // 每秒钟更新一次剩余时间
+
+      // 存档产品信息
+      var productInfo = {
+        productName: productName,
+        expirationDate: expirationDate.toISOString(),
+        remainingTime: ""
+      };
+
+      // 发送POST请求保存产品信息
+      $.post('/save_product', productInfo, function(response) {
+        console.log(response);
+      });
+    }
+
+    function updateRemainingTime(productName, expirationDate, currentDate) {
+      // 计算剩余时间（毫秒）
+      var remainingTime = expirationDate.getTime() - currentDate.getTime();
+
+      // 将剩余时间转换为天数、小时数和分钟数
+      var days = Math.floor(remainingTime / (1000 * 60 * 60 * 24));
+      var hours = Math.floor((remainingTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      var minutes = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60));
+
+      // 更新显示剩余时间的元素
+      $('#remainingTime').text(days + "天 " + hours + "小时 " + minutes + "分钟");
+    }
+  </script>
+</head>
+<body>
+  <h1>产品到期监测</h1>
+  <label for="productName">产品名称：</label>
+  <input type="text" id="productName" placeholder="输入产品名称">
+
+  <label for="expirationDate">到期日期：</label>
+  <input type="date" id="expirationDate" onchange="calculateRemainingTime()">
+
+  <h2>存档记录：</h2>
+  <ul id="productArchives"></ul>
+
+  <script>
+    // 页面加载时，获取并显示存档记录
+    $(document).ready(function() {
+      $.get('/get_archives', function(response) {
+        var archives = JSON.parse(response);
+        var archiveList = '';
+
+        for (var i = 0; i < archives.length; i++) {
+          var archive = archives[i];
+          var expirationDate = new Date(archive.expiration);
+
+          var remainingTime = expirationDate.getTime() - Date.now();
+          var days = Math.floor(remainingTime / (1000 * 60 * 60 * 24));
+          var hours = Math.floor((remainingTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+          var minutes = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60));
+
+          archiveList += '<li>' + archive.name + ' - 到期日期：' + archive.expiration + ' - 剩余时间：' +
+            days + '天 ' + hours + '小时 ' + minutes + '分钟' + '</li>';
+        }
+
+        $('#productArchives').html(archiveList);
+      });
+    });
+  </script>
+</body>
+</html>

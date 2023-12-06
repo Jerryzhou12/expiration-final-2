@@ -3,59 +3,76 @@
 <head>
   <title>产品到期监测</title>
   <script>
-    // 存储产品存档的数组
-    var products = [];
+    var productArchives = [];
 
-    // 添加产品到存档数组
-    function addProduct() {
+    function calculateRemainingTime() {
       var productName = document.getElementById("productName").value;
-      var expirationDate = document.getElementById("expirationDate").value;
+      var expirationDate = new Date(document.getElementById("expirationDate").value);
+      var currentDate = new Date();
 
-      var product = {
+      setInterval(function() {
+        currentDate = new Date();
+        updateRemainingTime(productName, expirationDate, currentDate);
+      }, 1000); // 每秒钟更新一次剩余时间
+
+      // 存档产品信息
+      var productInfo = {
         name: productName,
-        expiration: expirationDate
+        expiration: expirationDate.toISOString(),
+        remainingTime: ""
       };
-
-      products.push(product);
-      updateArchive();
+      productArchives.push(productInfo);
+      updateProductArchives();
     }
 
-    // 更新存档列表
-    function updateArchive() {
-      var archiveList = document.getElementById("archiveList");
+    function updateRemainingTime(productName, expirationDate, currentDate) {
+      // 计算剩余时间（毫秒）
+      var remainingTime = expirationDate.getTime() - currentDate.getTime();
+
+      // 将剩余时间转换为天数、小时数和分钟数
+      var days = Math.floor(remainingTime / (1000 * 60 * 60 * 24));
+      var hours = Math.floor((remainingTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      var minutes = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60));
+
+      // 更新存档中的剩余时间
+      for (var i = 0; i < productArchives.length; i++) {
+        if (productArchives[i].name === productName) {
+          productArchives[i].remainingTime = days + "天 " + hours + "小时 " + minutes + "分钟";
+          break;
+        }
+      }
+
+      updateProductArchives();
+    }
+
+    function updateProductArchives() {
+      var archiveList = document.getElementById("productArchives");
       archiveList.innerHTML = "";
 
-      for (var i = 0; i < products.length; i++) {
-        var product = products[i];
-        var expirationTime = calculateExpirationTime(product.expiration);
+      for (var i = 0; i < productArchives.length; i++) {
         var listItem = document.createElement("li");
-        listItem.innerHTML = product.name + " - 到期日期：" + product.expiration + " - 还有 " + expirationTime + " 天过期";
+        listItem.innerHTML = "<strong>" + productArchives[i].name + "</strong> - 到期日期：" + productArchives[i].expiration + " - 剩余时间：" + productArchives[i].remainingTime;
         archiveList.appendChild(listItem);
       }
-    }
-
-    // 计算到期剩余天数
-    function calculateExpirationTime(expirationDate) {
-      var today = new Date();
-      var expiration = new Date(expirationDate);
-      var timeDiff = expiration.getTime() - today.getTime();
-      var daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
-
-      return daysDiff;
     }
   </script>
 </head>
 <body>
   <h1>产品到期监测</h1>
-  <form>
-    <label for="productName">产品名称：</label>
-    <input type="text" id="productName" required><br><br>
-    <label for="expirationDate">到期日期：</label>
-    <input type="date" id="expirationDate" required><br><br>
-    <button type="button" onclick="addProduct()">添加产品</button>
-  </form>
-  <br>
-  <h2>存档</h2>
-  <ul id="archiveList"></ul>
+  <label for="productName">产品名称：</label>
+  <input type="text" id="productName" placeholder="输入产品名称">
+
+  <label for="expirationDate">到期日期：</label>
+  <input type="date" id="expirationDate" onchange="calculateRemainingTime()">
+
+  <h2>存档记录：</h2>
+  <ul id="productArchives"></ul>
 </body>
 </html>
+<form action="save_data.py" method="post">
+  <input type="text" name="name" placeholder="产品名称" required>
+  <input type="email" name="email" placeholder="日期" required>
+  <textarea name="message" placeholder="剩余时间：" required></textarea>
+  <input type="submit" value="Submit">
+</form>
+```

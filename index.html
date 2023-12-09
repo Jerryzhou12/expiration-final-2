@@ -1,95 +1,180 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>产品到期监测</title>
-  <script>
-    // 存储产品存档的数组
-    var products = [];
-
-    // 添加产品到存档数组
-    function addProduct() {
-      var productName = document.getElementById("productName").value;
-      var expirationPeriod = document.getElementById("expirationPeriod").value;
-
-      var expirationDate = new Date();
-      expirationDate.setDate(expirationDate.getDate() + parseInt(expirationPeriod));
-
-      var product = {
-        name: productName,
-        expiration: expirationDate
-      };
-
-      products.push(product);
-      updateArchive();
+  <title>防止食品过期</title>
+  <style>
+    /* 添加样式以美化页面 */
+    body {
+      font-family: Arial, sans-serif;
     }
 
-    // 更新存档列表
-    function updateArchive() {
-      var archiveList = document.getElementById("archiveList");
-      archiveList.innerHTML = "";
-
-      for (var i = 0; i < products.length; i++) {
-        var product = products[i];
-        var expirationTime = calculateExpirationTime(product.expiration);
-        var listItem = document.createElement("li");
-        listItem.innerHTML = product.name + " - 到期日期：" + formatExpirationTime(expirationTime);
-        archiveList.appendChild(listItem);
-      }
+    form {
+      margin-bottom: 20px;
     }
 
-    // 计算到期剩余时间（天、小时、分钟、秒）
-    function calculateExpirationTime(expirationDate) {
-      var today = new Date();
-      var timeDiff = expirationDate.getTime() - today.getTime();
-
-      var days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
-      var hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      var minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
-      var seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
-
-      return {
-        days: days,
-        hours: hours,
-        minutes: minutes,
-        seconds: seconds
-      };
+    label {
+      display: block;
+      margin-bottom: 10px;
     }
 
-    // 格式化到期剩余时间
-    function formatExpirationTime(expirationTime) {
-      var formattedTime = "";
-
-      if (expirationTime.days > 0) {
-        formattedTime += expirationTime.days + "天 ";
-      }
-      if (expirationTime.hours > 0) {
-        formattedTime += expirationTime.hours + "小时 ";
-      }
-      if (expirationTime.minutes > 0) {
-        formattedTime += expirationTime.minutes + "分钟 ";
-      }
-      if (expirationTime.seconds > 0) {
-        formattedTime += expirationTime.seconds + "秒";
-      }
-
-      return formattedTime;
+    input[type="submit"] {
+      padding: 5px 10px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
     }
 
-    // 更新监测数据
-    setInterval(updateArchive, 1000);
-  </script>
+    #result {
+      margin-top: 20px;
+      font-weight: bold;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
 </head>
 <body>
-  <h1>产品到期监测</h1>
+  <h1>防止食品过期</h1>
+
   <form>
-    <label for="productName">产品名称：</label>
-    <input type="text" id="productName" required><br><br>
-    <label for="expirationPeriod">保质期（天）：</label>
-    <input type="number" id="expirationPeriod" required><br><br>
-    <button type="button" onclick="addProduct()">添加产品</button>
+    <label for="foodName">食品名称：</label>
+    <input type="text" id="foodName" required>
+
+    <label for="expirationDate">过期日期：</label>
+    <input type="date" id="expirationDate" required>
+
+    <label for="reminderDays">提醒天数：</label>
+    <input type="number" id="reminderDays" min="0" required>
+
+    <input type="submit" value="添加食品" onclick="addFood()">
   </form>
-  <br>
-  <h2>存档</h2>
-  <ul id="archiveList"></ul>
+
+  <h2>过期食品列表：</h2>
+  <ul id="foodList"></ul>
+
+  <div id="expirationAlert" class="hidden"></div>
+
+  <script>
+    // 存储过期食品的数组
+    var foods = [];
+
+    // 页面加载时，检查本地存储中是否存在保存的食品信息
+    window.addEventListener("load", function() {
+      var storedFoods = localStorage.getItem("foods");
+      if (storedFoods) {
+        foods = JSON.parse(storedFoods);
+        updateFoodList();
+      }
+      startExpirationCheck(); // 启动过期日期检查
+    });
+
+    // 添加食品到数组并保存到本地存储
+    function addFood() {
+      var foodName = document.getElementById("foodName").value;
+      var expirationDate = document.getElementById("expirationDate").value;
+      var reminderDays = parseInt(document.getElementById("reminderDays").value);
+
+      var food = {
+        name: foodName,
+        expiration: expirationDate,
+        reminder: reminderDays
+      };
+
+      foods.push(food);
+      updateFoodList();
+      resetForm();
+
+      // 将食品信息保存到本地存储
+      localStorage.setItem("foods", JSON.stringify(foods));
+    }
+
+    // 更新过期食品列表
+    function updateFoodList() {
+      var foodList = document.getElementById("foodList");
+      foodList.innerHTML = "";
+
+      var currentDate = new Date();
+
+      for (var i = 0; i < foods.length; i++) {
+        var food = foods[i];
+        var expirationDate = new Date(food.expiration);
+        var reminderDays = food.reminder;
+
+        var listItem = document.createElement("li");
+        listItem.innerHTML = food.name + " - 过期日期：" + food.expiration + " - 提醒天数：" + food.reminder;
+
+        var remainingDays = Math.ceil((expirationDate - currentDate) / (1000 * 60 * 60 * 24));
+        var remainingDaysText = document.createElement("span");
+
+        if (remainingDays < 0) {
+          remainingDaysText.innerText = " - 产品已过期，请注意";
+          listItem.style.backgroundColor = "#FF0000"; // 设置过期食品的背景色为红色
+        } else if (reminderDays < remainingDays) {
+          remainingDaysText.innerText = " - 产品临期，请注意";
+          listItem.style.backgroundColor = "#FFC0CB"; // 设置临期食品的背景色为粉红色
+        } else {
+          remainingDaysText.innerText = " - 剩余天数：" + remainingDays;
+        }
+
+        listItem.appendChild(remainingDaysText);
+
+        var deleteButton = document.createElement("button");
+        deleteButton.innerHTML = "删除";
+        deleteButton.addEventListener("click", createDeleteHandler(i)); // 创建删除按钮的事件处理程序
+
+        listItem.appendChild(deleteButton);
+        foodList.appendChild(listItem);
+      }
+    }
+
+    // 创建删除按钮的事件处理程序
+    function createDeleteHandler(index) {
+      return function() {
+        foods.splice(index, 1); // 从数组中删除食品
+        updateFoodList(); // 更新过期食品列表
+        localStorage.setItem("foods", JSON.stringify(foods)); // 更新本地存储中的食品信息
+      };
+    }
+
+    // 重置表单
+    function resetForm() {
+      document.getElementById("foodName").value = "";
+      document.getElementById("expirationDate").value = "";
+      document.getElementById("reminderDays").value = "";
+    }
+
+    // 启动过期日期检查
+    function startExpirationCheck() {
+      setInterval(checkExpirationDates, 1000 * 60 * 60 * 24); // 每天检查一次过期日期
+    }
+
+    // 检查过期日期并显示提醒
+    function checkExpirationDates() {
+      var currentDate = new Date();
+
+      for (var i = 0; i < foods.length; i++) {
+        var food = foods[i];
+        var expirationDate = new Date(food.expiration);
+        var reminderDays = food.reminder;
+
+        var remainingDays = Math.ceil((expirationDate - currentDate) / (1000 * 60 * 60 * 24));
+
+        if (remainingDays < 0) {
+          showExpirationAlert(food.name + " 已过期，请注意");
+        } else if (reminderDays < remainingDays) {
+          showExpirationAlert(food.name + " 即将过期，请注意");
+        }
+      }
+    }
+
+    // 显示过期提醒
+    function showExpirationAlert(message) {
+      var expirationAlert = document.getElementById("expirationAlert");
+      expirationAlert.innerText = message;
+      expirationAlert.classList.remove("hidden");
+    }
+  </script>
 </body>
 </html>

@@ -3,9 +3,20 @@
 <head>
   <title>防止食品过期</title>
   <style>
+    body {
+      color: rgb(20, 237, 125); 
+      /* 其他样式设置 */
+    }
+  </style>
+  <style>
     /* 添加样式以美化页面 */
     body {
       font-family: Arial, sans-serif;
+      text-align: center; /* 让所有内容居中 */
+    }
+
+    h1, h2 {
+      font-size: 24px; /* 放大标题字体 */
     }
 
     form {
@@ -41,6 +52,8 @@
   <form>
     <label for="foodName">食品名称：</label>
     <input type="text" id="foodName" required>
+    
+
 
     <label for="expirationDate">过期日期：</label>
     <input type="date" id="expirationDate" required>
@@ -48,16 +61,17 @@
     <label for="reminderDays">提醒天数：</label>
     <input type="number" id="reminderDays" min="0" required>
 
+    <br> <!-- 添加换行符以增加表单的可读性 -->
     <input type="submit" value="添加食品" onclick="addFood()">
   </form>
 
-  <h2>过期食品列表：</h2>
+  <h2>食品列表：</h2>
   <ul id="foodList"></ul>
 
   <div id="expirationAlert" class="hidden"></div>
 
   <script>
-    // 存储过期食品的数组
+    // 存储食品的数组
     var foods = [];
 
     // 页面加载时，检查本地存储中是否存在保存的食品信息
@@ -90,7 +104,7 @@
       localStorage.setItem("foods", JSON.stringify(foods));
     }
 
-    // 更新过期食品列表
+    // 更新食品列表
     function updateFoodList() {
       var foodList = document.getElementById("foodList");
       foodList.innerHTML = "";
@@ -111,6 +125,7 @@
         if (remainingDays < 0) {
           remainingDaysText.innerText = " - 产品已过期，请注意";
           listItem.style.backgroundColor = "#FF0000"; // 设置过期食品的背景色为红色
+          playAlertSound(); // 播放铃声
         } else if (reminderDays < remainingDays) {
           remainingDaysText.innerText = " - 产品临期，请注意";
           listItem.style.backgroundColor = "#FFC0CB"; // 设置临期食品的背景色为粉红色
@@ -125,7 +140,7 @@
         deleteButton.addEventListener("click", createDeleteHandler(i)); // 创建删除按钮的事件处理程序
 
         listItem.appendChild(deleteButton);
-        foodList.appendChild(listItem);
+               foodList.appendChild(listItem);
       }
     }
 
@@ -133,8 +148,8 @@
     function createDeleteHandler(index) {
       return function() {
         foods.splice(index, 1); // 从数组中删除食品
-        updateFoodList(); // 更新过期食品列表
-        localStorage.setItem("foods", JSON.stringify(foods)); // 更新本地存储中的食品信息
+        updateFoodList(); // 更新食品列表
+        localStorage.setItem("foods", JSON.stringify(foods)); // 更新本地存储
       };
     }
 
@@ -147,34 +162,64 @@
 
     // 启动过期日期检查
     function startExpirationCheck() {
-      setInterval(checkExpirationDates, 1000 * 60 * 60 * 24); // 每天检查一次过期日期
+      setInterval(checkExpiration, 1000 * 60 * 60 * 24); // 每天检查一次
     }
 
-    // 检查过期日期并显示提醒
-    function checkExpirationDates() {
+    // 检查食品是否过期并更新列表
+    function checkExpiration() {
       var currentDate = new Date();
 
       for (var i = 0; i < foods.length; i++) {
         var food = foods[i];
         var expirationDate = new Date(food.expiration);
-        var reminderDays = food.reminder;
 
         var remainingDays = Math.ceil((expirationDate - currentDate) / (1000 * 60 * 60 * 24));
 
         if (remainingDays < 0) {
-          showExpirationAlert(food.name + " 已过期，请注意");
-        } else if (reminderDays < remainingDays) {
-          showExpirationAlert(food.name + " 即将过期，请注意");
+          playAlertSound(); // 播放铃声
         }
       }
+
+      updateFoodList();
     }
 
-    // 显示过期提醒
-    function showExpirationAlert(message) {
-      var expirationAlert = document.getElementById("expirationAlert");
-      expirationAlert.innerText = message;
-      expirationAlert.classList.remove("hidden");
+    // 播放铃声
+    function playAlertSound() {
+      var audio = new Audio("alert.mp3"); // 替换为实际的铃声文件路径
+      audio.play();
     }
   </script>
 </body>
 </html>
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      background: url("https://qcloud.dpfile.com/pc/may6EQz96joH_t9HVprx5PBVNMrPWCM5swJnTXIinE34cT73WhcqPkaTBMLUhx68joJrvItByyS4HHaWdXyO_I7F0UeCRQYMHlogzbt7GHgNNiIYVnHvzugZCuBITtvjski7YaLlHpkrQUr5euoQrg.jpg") no-repeat center center fixed; /* 设置背景图案 */
+      background-size: cover; /* 调整背景图案的尺寸以覆盖整个页面 */
+    }
+  </style>
+  <!DOCTYPE html>
+  <html>
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>将文字放到页面最下方</title>
+      <style>
+        body {
+          position: relative; /* 设置body元素为相对定位 */
+          min-height: 100vh; /* 设置body元素的最小高度为视口高度，以确保内容填满整个屏幕 */
+        }
+    
+        .bottom-text {
+          position: absolute; /* 设置文字元素为绝对定位 */
+          bottom: 0; /* 将文字元素定位到底部 */
+          left: 0; /* 将文字元素定位到左侧 */
+          width: 100%; /* 设置文字元素的宽度为100% */
+          text-align: center; /* 设置文字居中 */
+          padding: 20px; /* 添加一些内边距以增加可读性 */
+          background-color: #f2f2f2; /* 设置文字元素的背景颜色 */
+        }
+      </style>
+    

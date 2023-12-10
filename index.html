@@ -121,17 +121,15 @@
 
         var remainingDays = Math.ceil((expirationDate - currentDate) / (1000 * 60 * 60 * 24));
         var remainingDaysText = document.createElement("span");
-
         if (remainingDays < 0) {
-          remainingDaysText.innerText = " - 产品已过期，请注意";
-          listItem.style.backgroundColor = "#FF0000"; // 设置过期食品的背景色为红色
-          playAlertSound(); // 播放铃声
-        } else if (reminderDays < remainingDays) {
-          remainingDaysText.innerText = " - 产品临期，请注意";
-          listItem.style.backgroundColor = "#FFC0CB"; // 设置临期食品的背景色为粉红色
-        } else {
-          remainingDaysText.innerText = " - 剩余天数：" + remainingDays;
-        }
+  remainingDaysText.innerText = " - 产品已过期，请注意";
+  listItem.style.backgroundColor = "#FF0000"; // 设置过期产品的背景色为红色
+} else if (reminderDays >= 0 && remainingDays <= reminderDays) {
+  remainingDaysText.innerText = " - 产品临期，请注意";
+  listItem.style.backgroundColor = "#800080"; // 设置临期产品的背景色为紫色
+} else {
+  remainingDaysText.innerText = " - 剩余天数：" + remainingDays;
+}
 
         listItem.appendChild(remainingDaysText);
 
@@ -222,4 +220,37 @@
           background-color: #f2f2f2; /* 设置文字元素的背景颜色 */
         }
       </style>
-    
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>网站说明</title>
+        <style>
+          body {
+            background-color: #000000;
+            color: #FFFFFF;
+          }
+        </style>
+      </head>
+      <body>
+        <h1>网站说明</h1>
+  <p>欢迎访问我们的网站！我们的网站旨在提供一个方便的平台，让用户可以管理和追踪产品的使用期限的具体情况。以下是一些关于我们网站的重要说明：</p>
+
+  <h2>产品状态显示</h2>
+  <p>在我们的网站上，您可以输入产品的相关信息，并跟踪其状态和剩余天数。我们根据输入的信息计算产品的剩余天数，并根据剩余天数提供相应的提醒和警示。也可以对已经使用过的产品进行删除。</p>
+
+  <h2>过期产品警示</h2>
+  <p>如果产品的剩余天数已经小于0，我们会明确告知您该产品已经过期，请注意不要使用。</p>
+
+  <h2>临期产品提醒</h2>
+  <p>如果产品的剩余天数在设定的提醒天数范围内，我们会提醒您该产品即将达到临期状态，请注意妥善处理。</p>
+
+  <h2>背景色标识</h2>
+  <p>为了更直观地显示产品的状态，我们使用不同的背景色来标识过期产品和临期产品。过期产品使用红色背景色，临期产品使用紫色背景色。</p>
+
+  <p>我们希望通过我们的网站，您能更好地管理和追踪产品的状态，确保使用安全和合规。如果您有任何疑问或需要进一步的帮助，请随时联系我们的客户服务团队，他们将竭诚为您提供支持。</p>
+
+  <p>感谢您选择使用我们的网站，祝您使用愉快！</p>
+</body>
+</html>    
+
+  

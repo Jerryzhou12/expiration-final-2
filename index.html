@@ -246,11 +246,120 @@
 
   <h2>背景色标识</h2>
   <p>为了更直观地显示产品的状态，我们使用不同的背景色来标识过期产品和临期产品。过期产品使用红色背景色，临期产品使用紫色背景色。</p>
-
+  <h2>过期日期计算</h2>
+  <p>如果您不知道产品的过期日期，只知道生产日期和保质期，那么您可以通过页面最下方的计算器进行计算。<p>
   <p>我们希望通过我们的网站，您能更好地管理和追踪产品的状态，确保使用安全和合规。如果您有任何疑问或需要进一步的帮助，请随时联系我们的客户服务团队，他们将竭诚为您提供支持。</p>
 
   <p>感谢您选择使用我们的网站，祝您使用愉快！</p>
 </body>
-</html>    
+</html>   
+<!DOCTYPE html>
+<html>
+<head>
+  <title>产品过期日期计算</title>
+  <style>
+    #result {
+      background-color: #000000;
+      color: #FFFFFF;
+      padding: 10px;
+      width: 100%;
+      text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 9999;
+    }
 
-  
+    #deleteButton {
+      margin-left: 10px;
+    }
+  </style>
+  <script>
+    function calculateExpirationDate() {
+      var productName = document.getElementById("productName").value;
+      var productionDate = document.getElementById("productionDate").value;
+      var shelfLife = document.getElementById("shelfLife").value;
+
+      // 使用JavaScript计算过期日期
+      var expirationDate = new Date(productionDate);
+      expirationDate.setDate(expirationDate.getDate() + parseInt(shelfLife));
+
+      // 将过期日期转换为字符串
+      var expirationDateString = expirationDate.toISOString().split("T")[0];
+
+      // 将过期日期和产品名称存储到浏览器本地存储
+      localStorage.setItem("expirationDate", expirationDateString);
+      localStorage.setItem("productName", productName);
+
+      // 显示过期日期和产品名称，以及删除按钮
+      document.getElementById("result").innerHTML = "产品名称：" + productName + "，过期日期：" + expirationDateString + '<button id="deleteButton" onclick="deleteResult()">删除</button>';
+    }
+
+    // 删除结果和清除本地存储的过期日期和产品名称
+    function deleteResult() {
+      localStorage.removeItem("expirationDate");
+      localStorage.removeItem("productName");
+      document.getElementById("result").innerHTML = "";
+    }
+
+    // 页面加载时检查本地存储是否有过期日期和产品名称，并显示
+    window.onload = function() {
+      var expirationDate = localStorage.getItem("expirationDate");
+      var productName = localStorage.getItem("productName");
+      if (expirationDate && productName) {
+        document.getElementById("result").innerHTML = "产品名称：" + productName + "，过期日期：" + expirationDate + '<button id="deleteButton" onclick="deleteResult()">删除</button>';
+      }
+    }
+  </script>
+</html>
+<!DOCTYPE html>
+<html>
+<head>
+  <title>产品过期日期计算</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+    }
+
+    #backgroundContainer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url("your-background-image-url.jpg"); /* 替换为您的背景图片URL */
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-position: center center;
+      background-attachment: fixed;
+      background-color: rgba(0, 0, 0, 0.7); /* 使用rgba()函数设置黑色背景和透明度 */
+      z-index: -1;
+    }
+
+    #content {
+      padding: 10px;
+      color: #FFFFFF;
+    }
+  </style>
+  <script>
+    // JavaScript代码部分保持不变
+  </script>
+</head>
+<body>
+  <div id="backgroundContainer"></div>
+  <div id="content">
+    <div id="result"></div>
+    <h1>产品过期日期计算</h1>
+    <label for="productName">产品名称：</label>
+    <input type="text" id="productName">
+    <br>
+    <label for="productionDate">生产日期：</label>
+    <input type="date" id="productionDate">
+    <br>
+    <label for="shelfLife">保质期（天数）：</label>
+    <input type="number" id="shelfLife">
+    <br>
+    <button onclick="calculateExpirationDate()">计算过期日期</button>
+  </div>
+</body>
+</html>
